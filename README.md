@@ -1,8 +1,10 @@
+![image](https://github.com/netlify/identity-planetscale-nextjs-example/assets/30577427/633fb8d8-a893-49b6-8329-628d7cddaf62)
+
 # Netlify Identity + PlanetScale + Next.js example
 
-This is an example of how to use [Netlify Identity](https://www.netlify.com/docs/identity/) with Netlify's [PlanetScale](https://planetscale.com/) integration and [Next.js](https://nextjs.org/). This README.md will walk you through the most important steps to make it yourself! You can also just press the following button and follow steps TODO
+This is an example of how to use [Netlify Identity](https://www.netlify.com/docs/identity/) with Netlify's [PlanetScale](https://planetscale.com/) integration and [Next.js](https://nextjs.org/). This README.md will walk you through the most important steps to make it yourself! You can also just press the following button and follow steps 2 to 3 to deploy this example to your own Netlify account.
 
-[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=)
+[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/netlify/identity-planetscale-nextjs-example)
 
 ## Steps
 
@@ -14,18 +16,11 @@ Let's create a basic Next.js site and deploy it to Netlify! In your terminal run
 npx create-next-app
 ```
 
-Follow the default options, we went with using the `src` directory. Then, let's deploy it to Netlify. Make sure to have the [Netlify CLI](https://docs.netlify.com/cli/get-started/) installed and to have logged in with `netlify login`. Then, run:
-
-```bash
-cd my-next-app
-netlify init
-```
-
-Follow the prompts and then when you're done, run `netlify open` to open your site's settings in your Netlify account.
+Follow the default options, we went with using the `src` directory. Then, let's deploy it to Netlify. Make sure to have the [Netlify CLI](https://docs.netlify.com/cli/get-started/) installed and to have logged in with `netlify login`. Then, run `cd my-next-app` and connect your repository to a service like GitHub. After this run `netlify init` and follow the prompts and then when you're done, run `netlify open` to open your site's settings in your Netlify account.
 
 ### 2. Enable Netlify Identity
 
-In your Netlify site's settings, go to the Identity tab and enable Identity. We won't be using any external providers for this example.
+In your Netlify Site Configuration, go to the Identity tab and enable Identity. We won't be using any external providers for this example.
 
 ### 3. Enable PlanetScale
 
@@ -59,6 +54,7 @@ We'll be using [React Context](https://react.dev/learn/passing-data-deeply-with-
 ```tsx
 // src/context/authContext.tsx
 import netlifyIdentity, { type User } from 'netlify-identity-widget';
+import { createContext, useEffect, useState } from 'react';
 
 declare global {
   interface Window {
@@ -219,7 +215,7 @@ export default function Home() {
 }
 ```
 
-To try it out, run `netlify dev` and open your app in the browser. You should now be able to log in and log out! You can also check the Netlify Identity tab in your Netlify site settings view to see the users that have been created.
+To try it out, commit your work and push it. The site will be redeployed. Now run `netlify dev` and open your app in the browser. You should now be able to log in and log out! The first time you register it will send you through the production registration flow. This means that locally you'll have to log in with the credentials you set up on production to see your logged in state. You can also check the Netlify Identity tab in your Netlify Site Configuration view to see the users that have been created.
 
 ### 6. Adding a form to create issues
 
@@ -235,8 +231,16 @@ import { useContext, useEffect, useState } from 'react';
 
 export default function Home() {
   const { user, login, logout, loading } = useContext(AuthContext);
+  const [issueTitle, setIssueTitle] = useState('');
 
-  const handleSubmit = async (formData: { title: string }) => {
+  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setIssueTitle(event.target.value);
+  };
+
+  const handleSubmit: React.FormEventHandler<HTMLFormElement> = async (
+    event
+  ) => {
+    event.preventDefault();
     try {
       await fetch(`/.netlify/functions/create`, {
         method: 'POST',
@@ -245,7 +249,7 @@ export default function Home() {
           Authorization: `Bearer ${user?.token?.access_token}`,
         },
         body: JSON.stringify({
-          ...formData,
+          title: issueTitle,
         }),
       });
     } catch (error) {
@@ -258,7 +262,7 @@ export default function Home() {
   return user ? (
     <>
       {/* Our new form */}
-      <form onSubmit={onSubmit}>
+      <form onSubmit={handleSubmit}>
         <label htmlFor='title'>Title:</label>
         <input
           onChange={handleInputChange}
@@ -390,7 +394,7 @@ const handler: Handler = async function (
 export { handler };
 ```
 
-Now inside of `src/app/page.tsx` we'll add a new `useEffect` hook to fetch the issues from our PlanetScale database. We'll also add a new state variable to store the issues in. The code will look like this:
+Now inside of `src/app/page.tsx` we'll add a new `useEffect` hook to fetch the issues from our PlanetScale database. We'll also add a new state variable to store the issues in. After a new issue is submitted we'll also fetch the issues again to update the page. The code will look like this:
 
 ```tsx
 // src/app/page.tsx
@@ -400,10 +404,26 @@ import { AuthContext } from '@/context/authContext';
 import { User } from 'netlify-identity-widget';
 import { useContext, useEffect, useState } from 'react';
 
+interface Issue {
+  id: string;
+  title: string;
+}
+
+const fetchIssues = async (user: User) => {
+  const res = await fetch('/.netlify/functions/get', {
+    headers: {
+      Authorization: `Bearer ${user?.token?.access_token}`,
+    },
+  });
+  const data = await res.json();
+  return data;
+};
+
 export default function Home() {
   const { user, login, logout, loading } = useContext(AuthContext);
   const [issues, setIssues] = useState<Issue[]>([]);
   const [loadingIssues, setLoadingIssues] = useState<boolean>(true);
+  const [issueTitle, setIssueTitle] = useState('');
 
   useEffect(() => {
     if (user) {
@@ -414,7 +434,14 @@ export default function Home() {
     }
   }, [user]);
 
-  const handleSubmit = async (formData: { title: string }) => {
+  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setIssueTitle(event.target.value);
+  };
+
+  const handleSubmit: React.FormEventHandler<HTMLFormElement> = async (
+    event
+  ) => {
+    event.preventDefault();
     try {
       await fetch(`/.netlify/functions/create`, {
         method: 'POST',
@@ -423,11 +450,10 @@ export default function Home() {
           Authorization: `Bearer ${user?.token?.access_token}`,
         },
         body: JSON.stringify({
-          ...formData,
+          title: issueTitle,
         }),
       });
 
-      // Also fetch the issues again after creating a new one
       if (user) {
         fetchIssues(user).then((issues) => {
           setIssues(issues);
@@ -443,7 +469,7 @@ export default function Home() {
   return user ? (
     <>
       {/* Our new form */}
-      <form onSubmit={onSubmit}>
+      <form onSubmit={handleSubmit}>
         <label htmlFor='title'>Title:</label>
         <input
           onChange={handleInputChange}
@@ -457,11 +483,12 @@ export default function Home() {
 
         <button type='submit'>Submit</button>
       </form>
-			{/* List our issues */}
-			<ul>
-				{issues.map((issue) => (
-					<li key={issue.id}>{issue.title}</li>
-				))}
+      {/* List our issues */}
+      <ul>
+        {issues.map((issue) => (
+          <li key={issue.id}>{issue.title}</li>
+        ))}
+      </ul>
       <button onClick={logout}>Log out</button>
     </>
   ) : (
@@ -558,14 +585,86 @@ import { AuthContext } from '@/context/authContext';
 import { User } from 'netlify-identity-widget';
 import { useContext, useEffect, useState } from 'react';
 
+interface Issue {
+  id: string;
+  title: string;
+}
+
+const fetchIssues = async (user: User) => {
+  const res = await fetch('/.netlify/functions/get', {
+    headers: {
+      Authorization: `Bearer ${user?.token?.access_token}`,
+    },
+  });
+  const data = await res.json();
+  return data;
+};
+
 export default function Home() {
   const { user, login, logout, loading, deleteAccount } =
     useContext(AuthContext);
+  const [issues, setIssues] = useState<Issue[]>([]); // Provide type for issues state variable
+  const [loadingIssues, setLoadingIssues] = useState<boolean>(true);
+  const [issueTitle, setIssueTitle] = useState('');
 
-  if (loading) return <div>Loading...</div>;
+  useEffect(() => {
+    if (user) {
+      fetchIssues(user).then((issues) => {
+        setIssues(issues);
+        setLoadingIssues(false);
+      });
+    }
+  }, [user]);
+
+  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setIssueTitle(event.target.value);
+  };
+
+  const handleSubmit: React.FormEventHandler<HTMLFormElement> = async (
+    event
+  ) => {
+    event.preventDefault();
+    try {
+      await fetch(`/.netlify/functions/create`, {
+        method: 'POST',
+        headers: {
+          // this will ensure that the Netlify function has access to the user object.
+          Authorization: `Bearer ${user?.token?.access_token}`,
+        },
+        body: JSON.stringify({
+          title: issueTitle,
+        }),
+      });
+    } catch (error) {
+      console.error('Error submitting issue:', error);
+    }
+  };
+
+  if (loading || loadingIssues) return <div>Loading...</div>;
 
   return user ? (
     <>
+      {/* Our new form */}
+      <form onSubmit={handleSubmit}>
+        <label htmlFor='title'>Title:</label>
+        <input
+          onChange={handleInputChange}
+          type='text'
+          id='title'
+          name='title'
+          placeholder='Add an issue'
+          required
+          value={issueTitle}
+        />
+
+        <button type='submit'>Submit</button>
+      </form>
+      {/* List our issues */}
+      <ul>
+        {issues.map((issue) => (
+          <li key={issue.id}>{issue.title}</li>
+        ))}
+      </ul>
       <button onClick={logout}>Log out</button>
       <button onClick={deleteAccount}>Delete account</button>
     </>
@@ -574,3 +673,15 @@ export default function Home() {
   );
 }
 ```
+
+## What's next?
+
+Congrats! You now have a working example! You can start building your own app! Here are some ideas:
+
+- Add a form to update issues
+- Add a button to delete issues
+- Make it possible to change the status of an issue
+
+## Create your own integrations
+
+Are you curious about building your own integration with the Netlify platform? Then check out our [Netlify SDK](https://sdk.netlify.com/get-started/introduction/)
