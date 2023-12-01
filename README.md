@@ -1,8 +1,10 @@
+![image](https://github.com/netlify/identity-planetscale-nextjs-example/assets/30577427/633fb8d8-a893-49b6-8329-628d7cddaf62)
+
 # Netlify Identity + PlanetScale + Next.js example
 
-This is an example of how to use [Netlify Identity](https://www.netlify.com/docs/identity/) with Netlify's [PlanetScale](https://planetscale.com/) integration and [Next.js](https://nextjs.org/). This README.md will walk you through the most important steps to make it yourself! You can also just press the following button and follow steps TODO
+This is an example of how to use [Netlify Identity](https://www.netlify.com/docs/identity/) with Netlify's [PlanetScale](https://planetscale.com/) integration and [Next.js](https://nextjs.org/). This README.md will walk you through the most important steps to make it yourself! You can also just press the following button and follow steps 2 to 3 to deploy this example to your own Netlify account.
 
-[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=)
+[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/netlify/identity-planetscale-nextjs-example)
 
 ## Steps
 
@@ -574,3 +576,15 @@ export default function Home() {
   );
 }
 ```
+
+## What's next?
+
+Congrats! You now have a working example! You can start building your own app! Here are some ideas:
+
+- Add a form to update issues
+- Add a button to delete issues
+- Make it possible to change the status of an issue
+
+## Create your own integrations
+
+Are you curious about building your own integration with the Netlify platform? Then check out our [Netlify SDK](https://sdk.netlify.com/get-started/introduction/)
