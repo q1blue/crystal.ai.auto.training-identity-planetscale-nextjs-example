@@ -1,0 +1,35 @@
+.demo__container {
+  min-height: 300px;
+  margin-top: 2rem;
+  background: rgba(255, 255, 255, 0.52);
+  border-radius: 1rem;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+@media (max-width: 480px) {
+  .demo__container {
+    border-radius: 0;
+  }
+}
+
+.demo__login {
+  display: flex;
+  min-height: 300px;
+  justify-content: center;
+  padding: 2rem;
+  align-items: center;
+}
+
+.demo__login__content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.demo__logout {
+  display: flex;
+  justify-content: center;
+  padding: 2rem;
+}
