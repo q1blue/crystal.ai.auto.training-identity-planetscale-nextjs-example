@@ -150,15 +150,15 @@ input {
 }
 
 input,
-button {
+.btn {
   height: 42px;
 }
 
-input + button {
+input + .btn {
   margin-left: 0.8rem;
 }
 
-button + button {
+.btn + .btn {
   margin-left: 0.8rem;
 }
 
@@ -180,6 +180,7 @@ button + button {
   font-weight: 680;
   font-family: var(--font-family-main);
   position: relative;
+  text-decoration: none;
 }
 
 .btn:active {
