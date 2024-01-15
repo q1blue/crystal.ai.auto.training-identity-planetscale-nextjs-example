@@ -16,8 +16,18 @@ export default function Hero() {
       <p className='hero__description'>
         This is a demo of Netlify Identity with PlanetScale and Next.js.
       </p>
-      <button className='btn btn--ghost'>Deploy to Netlify</button>
-      <button className='btn btn--ghost'>Source code</button>
+      <a
+        className='btn btn--ghost'
+        href='https://app.netlify.com/start/deploy?repository=https://github.com/netlify/identity-planetscale-nextjs-example'
+      >
+        Deploy to Netlify
+      </a>
+      <a
+        className='btn btn--ghost'
+        href='https://github.com/netlify/identity-planetscale-nextjs-example'
+      >
+        Source code
+      </a>
     </article>
   );
 }
