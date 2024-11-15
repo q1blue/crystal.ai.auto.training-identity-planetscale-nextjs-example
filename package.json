@@ -12,7 +12,7 @@
     "@netlify/functions": "^2.4.0",
     "@netlify/netlify-marketing-tokens": "^1.1.0",
     "@netlify/planetscale": "^1.1.0",
-    "mysql2": "^3.6.3",
+    "mysql2": "^3.9.8",
     "netlify-identity-widget": "^1.9.2",
     "next": "14.0.1",
     "react": "^18",
